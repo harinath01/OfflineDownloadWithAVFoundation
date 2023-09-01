@@ -28,5 +28,9 @@ class ViewController: UIViewController {
         playerContainer.addSubview(playerViewController!.view)
         playerViewController!.view.frame = playerContainer.bounds
     }
+    
+    
 }
+
+
 
