@@ -1,5 +1,6 @@
 import UIKit
 import AVKit
+import RealmSwift
 
 class ViewController: UIViewController {
     @IBOutlet weak var playerContainer: UIView!
@@ -14,12 +15,16 @@ class ViewController: UIViewController {
     private let configuration = URLSessionConfiguration.background(withIdentifier: "com.tpstreams.downloadSession")
     private var downloadSession: AVAssetDownloadURLSession?
     private var downloadTask: AVAssetDownloadTask?
-    private var downloadingStatus: DownloadingStatus = .notStarted {
+    private var realmNotificationToken: NotificationToken?
+    private var offlineAsset: OfflineAsset? {
         didSet {
-            updateUIForDownloadingStatus()
+            if offlineAsset?.status == "Finished" {
+                updateUIForDownloadingStatus()
+            } else {
+                addObserversOnOfflineAsset()
+            }
         }
     }
-    private var downloadedPath: URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,33 +42,57 @@ class ViewController: UIViewController {
         addChild(playerViewController!)
         playerContainer.addSubview(playerViewController!.view)
         playerViewController!.view.frame = playerContainer.bounds
+        offlineAsset = getOfflineAsset()
+    }
+    
+    private func getOfflineAsset() -> OfflineAsset? {
+        let predicate = NSPredicate(format: "srcURL == %@ AND status == %@", self.playBackURL.absoluteString, "Finished")
+        return OfflineAsset.manager.filter(predicate: predicate).first
+    }
+    
+    private func addObserversOnOfflineAsset(){
+        realmNotificationToken = self.offlineAsset!.observe(keyPaths: ["status"], {[weak self] change in
+            self?.updateUIForDownloadingStatus()
+        })
     }
     
     private func updateUIForDownloadingStatus() {
-        switch downloadingStatus {
-        case .notStarted:
-            title = "Download"
-        case .started:
+        guard let status = offlineAsset?.status else { return }
+        
+        switch status {
+        case "InProgress":
             title = "Pause"
-        case .paused:
+        case "Paused":
             title = "Resume"
-        case .finished:
+        case "Finished":
             title = "Delete Video"
             playDownloadedButton.isHidden = false
             progressView.isHidden = true
             progressLabel.isHidden = true
+        default:
+            break
         }
+        
         actionButton.setTitle(title, for: .normal)
     }
     
     @IBAction func startOrPauseDownload(_ sender: Any) {
-        switch downloadingStatus {
-        case .notStarted, .paused:
+        if offlineAsset == nil {
             startOrResumeDownloading()
-        case .started:
+            return
+        }
+        
+        guard let status = offlineAsset?.status else { return }
+        
+        switch status {
+        case "InProgress":
             pauseDownloading()
-        case .finished:
+        case "Paused":
+            startOrResumeDownloading()
+        case "Finished":
             deleteDownloadedVideo()
+        default:
+            break
         }
     }
     
@@ -71,13 +100,13 @@ class ViewController: UIViewController {
         initializeDownloadSession()
         initializeDownloadTask()
         downloadTask!.resume()
-        downloadingStatus = .started
     }
     
     private func pauseDownloading() {
         if downloadTask?.state == .running {
             downloadTask?.cancel()
-            downloadingStatus = .paused
+            offlineAsset!.status = "Paused"
+            offlineAsset!.save()
         }
     }
     
@@ -101,25 +130,27 @@ class ViewController: UIViewController {
     }
     
     @IBAction func playDownloadedVideo(_ sender: Any) {
-        if downloadedPath == nil {
-            return
-        }     
-        
-        let playerItem = AVPlayerItem(url: downloadedPath!)
-        playerViewController?.player?.replaceCurrentItem(with: playerItem)
-        playerViewController?.player?.play()
+        let baseURL = URL(fileURLWithPath: NSHomeDirectory())
+        let assetURL = baseURL.appendingPathComponent(self.offlineAsset!.downloadedPath)
+        let asset = AVURLAsset(url: assetURL)
+        if let cache = asset.assetCache, cache.isPlayableOffline {
+            let playerItem = AVPlayerItem(asset: asset)
+            playerViewController?.player?.replaceCurrentItem(with: playerItem)
+            playerViewController?.player?.play()
+        }
     }
 }
 
 
 extension ViewController: AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didFinishDownloadingTo location: URL) {
-        self.downloadedPath = location
+        offlineAsset = OfflineAsset.manager.create(srcURL: self.playBackURL.absoluteString, downloadedPath: location.relativePath)
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard error != nil else {
-            self.downloadingStatus = .finished
+            offlineAsset?.status = "Finished"
+            offlineAsset?.save()
             return
         }
     }
@@ -129,7 +160,6 @@ extension ViewController: AVAssetDownloadDelegate {
         var percentageComplete = 0.0
         
         for value in loadedTimeRanges {
-
             let loadedTimeRange = value.timeRangeValue
             percentageComplete += loadedTimeRange.duration.seconds / timeRangeExpectedToLoad.duration.seconds
         }
@@ -141,11 +171,4 @@ extension ViewController: AVAssetDownloadDelegate {
         print("\(downloadCompletedString)% downloaded")
         progressLabel.text = "\(downloadCompletedString)%"
     }
-}
-
-enum DownloadingStatus {
-    case notStarted
-    case started
-    case paused
-    case finished
 }
