@@ -21,10 +21,10 @@ class OfflineAsset: Object {
         self.downloadedPath = downloadedPath
     }
     
-    func save() {
+    func updateStatus(_ status: String) {
         let realm = try! Realm()
         try! realm.write {
-            realm.add(self, update: .modified)
+            self.status = status
         }
     }
     

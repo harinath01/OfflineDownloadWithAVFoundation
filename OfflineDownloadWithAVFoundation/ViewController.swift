@@ -18,10 +18,12 @@ class ViewController: UIViewController {
     private var realmNotificationToken: NotificationToken?
     private var offlineAsset: OfflineAsset? {
         didSet {
-            if offlineAsset?.status == "Finished" {
-                updateUIForDownloadingStatus()
-            } else {
-                addObserversOnOfflineAsset()
+            if let status = offlineAsset?.status {
+                if status == "Finished" {
+                    updateUIForDownloadingStatus()
+                } else {
+                    addObserversOnOfflineAsset()
+                }
             }
         }
     }
@@ -70,7 +72,7 @@ class ViewController: UIViewController {
             progressView.isHidden = true
             progressLabel.isHidden = true
         default:
-            break
+            title = "Download Video"
         }
         
         actionButton.setTitle(title, for: .normal)
@@ -100,18 +102,33 @@ class ViewController: UIViewController {
         initializeDownloadSession()
         initializeDownloadTask()
         downloadTask!.resume()
+        progressView.isHidden = false
+        progressLabel.isHidden = false
     }
     
     private func pauseDownloading() {
         if downloadTask?.state == .running {
             downloadTask?.cancel()
-            offlineAsset!.status = "Paused"
-            offlineAsset!.save()
+            offlineAsset?.updateStatus("Paused")
         }
     }
     
     private func deleteDownloadedVideo() {
-        // Implement delete functionality here
+        do {
+            try deleteVideoFromStorage()
+            offlineAsset?.delete()
+            offlineAsset = nil
+            actionButton.setTitle("Download", for: .normal)
+            playDownloadedButton.isHidden = true
+        } catch {
+            print("Failed to delete the video")
+        }
+    }
+    
+    private func deleteVideoFromStorage() throws {
+        let baseURL = URL(fileURLWithPath: NSHomeDirectory())
+        let fileURL = baseURL.appendingPathComponent(offlineAsset!.downloadedPath)
+        try FileManager.default.removeItem(at: fileURL)
     }
     
     private func initializeDownloadSession() {
@@ -149,8 +166,7 @@ extension ViewController: AVAssetDownloadDelegate {
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard error != nil else {
-            offlineAsset?.status = "Finished"
-            offlineAsset?.save()
+            offlineAsset?.updateStatus("Finished")
             return
         }
     }
