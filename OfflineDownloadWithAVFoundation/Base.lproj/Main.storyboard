@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_5" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -28,12 +29,35 @@
                                             <constraint firstAttribute="height" relation="lessThanOrEqual" constant="240" id="7h8-Wu-UHd" userLabel="height ≤ 230"/>
                                         </constraints>
                                     </view>
+                                    <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rgE-a9-HcG">
+                                        <rect key="frame" x="8" y="324" width="335" height="4"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </progressView>
                                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="P8t-ep-xf0">
-                                        <rect key="frame" x="158" y="395" width="100" height="35"/>
+                                        <rect key="frame" x="136" y="358" width="147" height="35"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Download"/>
+                                        <connections>
+                                            <action selector="startOrPauseDownload:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ic8-i2-cbb"/>
+                                        </connections>
                                     </button>
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="itT-2Q-ucB">
+                                        <rect key="frame" x="105" y="401" width="204" height="35"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Play Downloaded Video"/>
+                                        <connections>
+                                            <action selector="playDownloadedVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="onI-XR-aIK"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="100 %" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cvH-6s-KCi">
+                                        <rect key="frame" x="351" y="317" width="44" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <viewLayoutGuide key="safeArea" id="8Xn-d5-xOf"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -48,12 +72,16 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <connections>
+                        <outlet property="actionButton" destination="P8t-ep-xf0" id="Wmt-Tm-jrD"/>
+                        <outlet property="playDownloadedButton" destination="itT-2Q-ucB" id="Bks-A3-CsG"/>
                         <outlet property="playerContainer" destination="8LU-4i-jvt" id="iue-k7-bk1"/>
+                        <outlet property="progressLabel" destination="cvH-6s-KCi" id="lxc-5u-1Qe"/>
+                        <outlet property="progressView" destination="rgE-a9-HcG" id="f7z-Fi-48r"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="140" y="5"/>
+            <point key="canvasLocation" x="139.13043478260872" y="4.6875"/>
         </scene>
     </scenes>
     <resources>
