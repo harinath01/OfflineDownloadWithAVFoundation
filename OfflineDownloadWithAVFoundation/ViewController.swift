@@ -28,6 +28,15 @@ class ViewController: UIViewController {
         }
     }
     
+    private var downloadedFileURL: URL?{
+        if offlineAsset?.downloadedPath != nil{
+            let baseURL = URL(fileURLWithPath: NSHomeDirectory())
+            return baseURL.appendingPathComponent(offlineAsset!.downloadedPath)
+        }
+        
+        return nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupPlayerView()
@@ -80,6 +89,7 @@ class ViewController: UIViewController {
     
     @IBAction func startOrPauseDownload(_ sender: Any) {
         if offlineAsset == nil {
+            offlineAsset = OfflineAsset.manager.create(srcURL: self.playBackURL.absoluteString, downloadedPath: "")
             startOrResumeDownloading()
             return
         }
@@ -108,27 +118,28 @@ class ViewController: UIViewController {
     
     private func pauseDownloading() {
         if downloadTask?.state == .running {
-            downloadTask?.cancel()
-            offlineAsset?.updateStatus("Paused")
+            downloadTask?.suspend()
+            offlineAsset?.set(\.status, value: "Paused")
         }
     }
     
     private func deleteDownloadedVideo() {
-        do {
-            try deleteVideoFromStorage()
-            offlineAsset?.delete()
-            offlineAsset = nil
-            actionButton.setTitle("Download", for: .normal)
-            playDownloadedButton.isHidden = true
-        } catch {
-            print("Failed to delete the video")
-        }
+        deleteVideoFromStorage()
+        offlineAsset?.delete()
+        offlineAsset = nil
+        actionButton.setTitle("Download", for: .normal)
+        playDownloadedButton.isHidden = true
     }
     
-    private func deleteVideoFromStorage() throws {
-        let baseURL = URL(fileURLWithPath: NSHomeDirectory())
-        let fileURL = baseURL.appendingPathComponent(offlineAsset!.downloadedPath)
-        try FileManager.default.removeItem(at: fileURL)
+    private func deleteVideoFromStorage() {
+        if downloadedFileURL == nil{ return }
+        
+        do {
+            try FileManager.default.removeItem(at: downloadedFileURL!)
+        } catch {
+            print("Failed to delete the video from storage")
+        }
+        
     }
     
     private func initializeDownloadSession() {
@@ -147,9 +158,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func playDownloadedVideo(_ sender: Any) {
-        let baseURL = URL(fileURLWithPath: NSHomeDirectory())
-        let assetURL = baseURL.appendingPathComponent(self.offlineAsset!.downloadedPath)
-        let asset = AVURLAsset(url: assetURL)
+        let asset = AVURLAsset(url: self.downloadedFileURL!)
         if let cache = asset.assetCache, cache.isPlayableOffline {
             let playerItem = AVPlayerItem(asset: asset)
             playerViewController?.player?.replaceCurrentItem(with: playerItem)
@@ -161,18 +170,18 @@ class ViewController: UIViewController {
 
 extension ViewController: AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didFinishDownloadingTo location: URL) {
-        offlineAsset = OfflineAsset.manager.create(srcURL: self.playBackURL.absoluteString, downloadedPath: location.relativePath)
+        offlineAsset?.set(\.downloadedPath, value: location.relativePath)
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard error != nil else {
-            offlineAsset?.updateStatus("Finished")
+            offlineAsset?.set(\.status, value: "Finished")
             return
         }
     }
     
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didLoad timeRange: CMTimeRange, totalTimeRangesLoaded loadedTimeRanges: [NSValue], timeRangeExpectedToLoad: CMTimeRange) {
-        self.progressView.isHidden = false
+        offlineAsset?.set(\.status, value: "InProgress")
         var percentageComplete = 0.0
         
         for value in loadedTimeRanges {

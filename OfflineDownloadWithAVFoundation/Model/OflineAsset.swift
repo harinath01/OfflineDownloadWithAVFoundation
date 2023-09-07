@@ -13,7 +13,7 @@ class OfflineAsset: Object {
     @Persisted var srcURL: String = ""
     @Persisted var downloadedPath: String = ""
     @Persisted var downloadedAt = Date()
-    @Persisted var status:String = "InProgress"
+    @Persisted var status:String = "notStarted"
     
     convenience init(srcURL:String, downloadedPath: String) {
         self.init()
@@ -21,10 +21,10 @@ class OfflineAsset: Object {
         self.downloadedPath = downloadedPath
     }
     
-    func updateStatus(_ status: String) {
+    func set<T>(_ keyPath: ReferenceWritableKeyPath<OfflineAsset, T>, value: T) {
         let realm = try! Realm()
         try! realm.write {
-            self.status = status
+            self[keyPath: keyPath] = value
         }
     }
     
