@@ -9,7 +9,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var progressLabel: UILabel!
     
-    var playBackURL = URL(fileURLWithPath: "https://d384padtbeqfgy.cloudfront.net/transcoded/8eaHZjXt6km/video.m3u8")
+    var playBackURL = URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/AeDsCzqB5Td/video.m3u8")!
     var player: AVPlayer?
     var playerViewController: AVPlayerViewController?
     private let configuration = URLSessionConfiguration.background(withIdentifier: "com.tpstreams.downloadSession")
@@ -152,10 +152,10 @@ class ViewController: UIViewController {
     
     private func initializeDownloadTask() {
         if self.downloadTask == nil {
-            downloadTask = downloadSession?.makeAssetDownloadTask(asset: AVURLAsset(url: URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/68PAFnYTjSU/video.m3u8")!),
+            downloadTask = downloadSession?.makeAssetDownloadTask(asset: AVURLAsset(url: self.playBackURL),
                                                                   assetTitle: "video",
                                                                   assetArtworkData: nil,
-                                                                  options: nil)
+                                                                  options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000])
         }
     }
     
