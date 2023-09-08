@@ -9,7 +9,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var progressLabel: UILabel!
     
-    var playBackURL = URL(fileURLWithPath: "https://d384padtbeqfgy.cloudfront.net/transcoded/8r65J7EY6NP/video.m3u8")
+    var playBackURL = URL(fileURLWithPath: "https://d384padtbeqfgy.cloudfront.net/transcoded/8eaHZjXt6km/video.m3u8")
     var player: AVPlayer?
     var playerViewController: AVPlayerViewController?
     private let configuration = URLSessionConfiguration.background(withIdentifier: "com.tpstreams.downloadSession")
@@ -44,6 +44,8 @@ class ViewController: UIViewController {
     
     private func setupPlayerView() {
         let asset = AVURLAsset(url: self.playBackURL)
+        ContentKeyManager.shared.contentKeySession.addContentKeyRecipient(asset)
+        ContentKeyManager.shared.contentKeyDelegate.setAssetDetails("8eaHZjXt6km", "16b608ba-9979-45a0-94fb-b27c1a86b3c1")
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
         
@@ -150,7 +152,7 @@ class ViewController: UIViewController {
     
     private func initializeDownloadTask() {
         if self.downloadTask == nil {
-            downloadTask = downloadSession?.makeAssetDownloadTask(asset: AVURLAsset(url: URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/AeDsCzqB5Td/video.m3u8")!),
+            downloadTask = downloadSession?.makeAssetDownloadTask(asset: AVURLAsset(url: URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/68PAFnYTjSU/video.m3u8")!),
                                                                   assetTitle: "video",
                                                                   assetArtworkData: nil,
                                                                   options: nil)

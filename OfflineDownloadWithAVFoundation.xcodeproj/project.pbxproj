@@ -16,6 +16,10 @@
 		03A7A65E2AA612CF005F3BDE /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 03A7A65D2AA612CF005F3BDE /* Realm */; };
 		03A7A6602AA612CF005F3BDE /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 03A7A65F2AA612CF005F3BDE /* RealmSwift */; };
 		03A7A6622AA612FA005F3BDE /* OflineAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A7A6612AA612FA005F3BDE /* OflineAsset.swift */; };
+		03B431462AAB2488008B3369 /* ContentKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431452AAB2487008B3369 /* ContentKeyManager.swift */; };
+		03B431482AAB24AF008B3369 /* ContentKeyDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431472AAB24AF008B3369 /* ContentKeyDelegate.swift */; };
+		03B4314C2AAB2504008B3369 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B4314B2AAB2504008B3369 /* API.swift */; };
+		03B4314F2AAB25AC008B3369 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 03B4314E2AAB25AC008B3369 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +32,9 @@
 		031F59B82AA09592009AFE92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		031F59BA2AA09592009AFE92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		03A7A6612AA612FA005F3BDE /* OflineAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OflineAsset.swift; sourceTree = "<group>"; };
+		03B431452AAB2487008B3369 /* ContentKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentKeyManager.swift; sourceTree = "<group>"; };
+		03B431472AAB24AF008B3369 /* ContentKeyDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentKeyDelegate.swift; sourceTree = "<group>"; };
+		03B4314B2AAB2504008B3369 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03B4314F2AAB25AC008B3369 /* Alamofire in Frameworks */,
 				03A7A6602AA612CF005F3BDE /* RealmSwift in Frameworks */,
 				03A7A65E2AA612CF005F3BDE /* Realm in Frameworks */,
 			);
@@ -62,6 +70,8 @@
 		031F59AB2AA0958D009AFE92 /* OfflineDownloadWithAVFoundation */ = {
 			isa = PBXGroup;
 			children = (
+				03B4314A2AAB24F4008B3369 /* Network */,
+				03B431442AAB14A0008B3369 /* Managers */,
 				03A7A65B2AA611EB005F3BDE /* Model */,
 				031F59AC2AA0958D009AFE92 /* AppDelegate.swift */,
 				031F59AE2AA0958D009AFE92 /* SceneDelegate.swift */,
@@ -80,6 +90,23 @@
 				03A7A6612AA612FA005F3BDE /* OflineAsset.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		03B431442AAB14A0008B3369 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				03B431452AAB2487008B3369 /* ContentKeyManager.swift */,
+				03B431472AAB24AF008B3369 /* ContentKeyDelegate.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		03B4314A2AAB24F4008B3369 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				03B4314B2AAB2504008B3369 /* API.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -101,6 +128,7 @@
 			packageProductDependencies = (
 				03A7A65D2AA612CF005F3BDE /* Realm */,
 				03A7A65F2AA612CF005F3BDE /* RealmSwift */,
+				03B4314E2AAB25AC008B3369 /* Alamofire */,
 			);
 			productName = OfflineDownloadWithAVFoundation;
 			productReference = 031F59A92AA0958D009AFE92 /* OfflineDownloadWithAVFoundation.app */;
@@ -132,6 +160,7 @@
 			mainGroup = 031F59A02AA0958D009AFE92;
 			packageReferences = (
 				03A7A65C2AA612CF005F3BDE /* XCRemoteSwiftPackageReference "realm-swift" */,
+				03B4314D2AAB25AC008B3369 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			productRefGroup = 031F59AA2AA0958D009AFE92 /* Products */;
 			projectDirPath = "";
@@ -160,10 +189,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03B431482AAB24AF008B3369 /* ContentKeyDelegate.swift in Sources */,
 				031F59B12AA0958D009AFE92 /* ViewController.swift in Sources */,
 				031F59AD2AA0958D009AFE92 /* AppDelegate.swift in Sources */,
 				03A7A6622AA612FA005F3BDE /* OflineAsset.swift in Sources */,
+				03B431462AAB2488008B3369 /* ContentKeyManager.swift in Sources */,
 				031F59AF2AA0958D009AFE92 /* SceneDelegate.swift in Sources */,
+				03B4314C2AAB2504008B3369 /* API.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -393,6 +425,14 @@
 				kind = branch;
 			};
 		};
+		03B4314D2AAB25AC008B3369 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -405,6 +445,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 03A7A65C2AA612CF005F3BDE /* XCRemoteSwiftPackageReference "realm-swift" */;
 			productName = RealmSwift;
+		};
+		03B4314E2AAB25AC008B3369 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03B4314D2AAB25AC008B3369 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
