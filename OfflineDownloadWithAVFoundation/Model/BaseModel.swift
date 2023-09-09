@@ -10,6 +10,7 @@ import RealmSwift
 
 class BaseModel: Object {
     @Persisted(primaryKey: true) var _id: ObjectId
+    @Persisted var created_at = Date()
     
     func delete(){
         let realm = try! Realm()
