@@ -7,6 +7,7 @@
 
 import UIKit
 import RealmSwift
+import AVKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
             let config = Realm.Configuration(schemaVersion: 33)
             Realm.Configuration.defaultConfiguration = config
+        
+            activateAudioSession()
         return true
     }
 
@@ -35,6 +38,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
-
+    private func activateAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(AVAudioSession.Category.playback)
+        } catch {
+            debugPrint("Setting category to AVAudioSessionCategoryPlayback failed.")
+        }
+    }
 }
 
