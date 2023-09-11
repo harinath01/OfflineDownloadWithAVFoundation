@@ -12,37 +12,17 @@ class ViewController: UIViewController {
     var playBackURL = URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/8eaHZjXt6km/video.m3u8")!
     var player: AVPlayer?
     var playerViewController: AVPlayerViewController?
-    private let configuration = URLSessionConfiguration.background(withIdentifier: "com.tpstreams.downloadSession")
-    private var downloadSession: AVAssetDownloadURLSession?
-    private var downloadTask: AVAssetDownloadTask?
-    private var realmNotificationToken: NotificationToken?
+    private var statusChangeNotificationToken: NotificationToken?
+    private var progressChangeNotificationToken: NotificationToken?
     private var offlineAsset: OfflineAsset? {
         didSet {
-            if let status = offlineAsset?.status {
-                if status == "Finished" {
-                    updateUIForDownloadingStatus()
-                } else {
-                    addObserversOnOfflineAsset()
-                }
-            }
+            updateUIForDownloadingStatus()
+            addObserversOnOfflineAsset()
         }
-    }
-    
-    private var downloadedFileURL: URL?{
-        if offlineAsset?.downloadedPath != nil{
-            let baseURL = URL(fileURLWithPath: NSHomeDirectory())
-            return baseURL.appendingPathComponent(offlineAsset!.downloadedPath)
-        }
-        
-        return nil
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupPlayerView()
-    }
-    
-    private func setupPlayerView() {
         let asset = AVURLAsset(url: self.playBackURL)
         setupDRM(asset)
         let playerItem = AVPlayerItem(asset: asset)
@@ -53,7 +33,7 @@ class ViewController: UIViewController {
         addChild(playerViewController!)
         playerContainer.addSubview(playerViewController!.view)
         playerViewController!.view.frame = playerContainer.bounds
-        offlineAsset = getOfflineAsset()
+        offlineAsset = AssetPersistenceManager.shared.getDownloadedAsset(srcURL: self.playBackURL.absoluteString)
     }
     
     private func setupDRM(_ asset: AVURLAsset){
@@ -61,147 +41,77 @@ class ViewController: UIViewController {
         ContentKeyManager.shared.contentKeyDelegate.setAssetDetails("8eaHZjXt6km", "16b608ba-9979-45a0-94fb-b27c1a86b3c1")
     }
     
-    private func getOfflineAsset() -> OfflineAsset? {
-        let predicate = NSPredicate(format: "srcURL == %@ AND status == %@", self.playBackURL.absoluteString, "Finished")
-        return OfflineAsset.manager.filter(predicate: predicate).first
-    }
-    
     private func addObserversOnOfflineAsset(){
-        realmNotificationToken = self.offlineAsset!.observe(keyPaths: ["status"], {[weak self] change in
-            self?.updateUIForDownloadingStatus()
-        })
+        guard offlineAsset == nil else {
+            statusChangeNotificationToken = offlineAsset!.observe(keyPaths: ["status"], {[weak self] change in
+                self?.updateUIForDownloadingStatus()
+            })
+            progressChangeNotificationToken = offlineAsset!.observe(keyPaths: ["percentageCompleted"], {[weak self] change in
+                self?.updateProgressBar()
+            })
+            return
+        }
     }
     
     private func updateUIForDownloadingStatus() {
-        guard let status = offlineAsset?.status else { return }
-        
-        switch status {
-        case "InProgress":
-            title = "Pause"
-        case "Paused":
-            title = "Resume"
-        case "Finished":
-            title = "Delete Video"
-            playDownloadedButton.isHidden = false
-            progressView.isHidden = true
-            progressLabel.isHidden = true
-        default:
-            title = "Download Video"
+        if let status = offlineAsset?.status {
+            switch status {
+            case "InProgress":
+                title = "Pause"
+            case "Paused":
+                title = "Resume"
+            case "Finished":
+                title = "Delete Video"
+            default:
+                break
+            }
+        } else {
+            title = "Download"
         }
         
         actionButton.setTitle(title, for: .normal)
+        playDownloadedButton.isHidden = title != "Delete Video"
+        progressView.isHidden = title != "InProgress"
+        progressLabel.isHidden = title != "InProgress"
+    }
+    
+    private func updateProgressBar() {
+        guard let percentageCompleted = offlineAsset?.percentageCompleted else { return }
+        
+        progressView.setProgress(percentageCompleted / 100.0, animated: true)
+        progressView.isHidden = false
+        progressLabel.text = "\(String(format: "%.1f", percentageCompleted))%"
+        progressLabel.isHidden = false
     }
     
     @IBAction func startOrPauseDownload(_ sender: Any) {
-        if offlineAsset == nil {
-            offlineAsset = try! OfflineAsset.manager.create(["srcURL": self.playBackURL.absoluteString, "downloadedPath": ""])
-            startOrResumeDownloading()
+        guard let asset = offlineAsset else {
+            offlineAsset = AssetPersistenceManager.shared.startDownloading(from: playBackURL)
             return
         }
         
-        guard let status = offlineAsset?.status else { return }
-        
-        switch status {
+        switch asset.status {
         case "InProgress":
-            pauseDownloading()
+            AssetPersistenceManager.shared.pauseDownloadingAsset(asset)
         case "Paused":
-            startOrResumeDownloading()
+            AssetPersistenceManager.shared.resumeDownloadingAsset(asset)
         case "Finished":
-            deleteDownloadedVideo()
+            try? AssetPersistenceManager.shared.deleteDownloadedAsset(asset)
+            offlineAsset = nil
         default:
             break
         }
     }
     
-    private func startOrResumeDownloading() {
-        initializeDownloadSession()
-        initializeDownloadTask()
-        downloadTask!.resume()
-        progressView.isHidden = false
-        progressLabel.isHidden = false
-    }
-    
-    private func pauseDownloading() {
-        if downloadTask?.state == .running {
-            downloadTask?.suspend()
-            try! offlineAsset?.update(["status": "Paused"])
-        }
-    }
-    
-    private func deleteDownloadedVideo() {
-        deleteVideoFromStorage()
-        offlineAsset?.delete()
-        offlineAsset = nil
-        actionButton.setTitle("Download", for: .normal)
-        playDownloadedButton.isHidden = true
-    }
-    
-    private func deleteVideoFromStorage() {
-        if downloadedFileURL == nil{ return }
-        
-        do {
-            try FileManager.default.removeItem(at: downloadedFileURL!)
-        } catch {
-            print("Failed to delete the video from storage")
-        }
-        
-    }
-    
-    private func initializeDownloadSession() {
-        if self.downloadSession == nil {
-            downloadSession = AVAssetDownloadURLSession(configuration: configuration, assetDownloadDelegate: self, delegateQueue: OperationQueue.main)
-        }
-    }
-    
-    private func initializeDownloadTask() {
-        if self.downloadTask == nil {
-            let asset = AVURLAsset(url: self.playBackURL)
-            setupDRM(asset)
-            downloadTask = downloadSession?.makeAssetDownloadTask(asset: asset,
-                                                                  assetTitle: "video",
-                                                                  assetArtworkData: nil,
-                                                                  options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000])
-        }
-    }
-    
     @IBAction func playDownloadedVideo(_ sender: Any) {
-        let asset = AVURLAsset(url: self.downloadedFileURL!)
+        if offlineAsset?.downloadedFileURL == nil { return }
+        
+        let asset = AVURLAsset(url: offlineAsset!.downloadedFileURL!)
         setupDRM(asset)
         if let cache = asset.assetCache, cache.isPlayableOffline {
             let playerItem = AVPlayerItem(asset: asset)
             playerViewController?.player?.replaceCurrentItem(with: playerItem)
             playerViewController?.player?.play()
         }
-    }
-}
-
-
-extension ViewController: AVAssetDownloadDelegate {
-    func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didFinishDownloadingTo location: URL) {
-        try! offlineAsset?.update(["downloadedPath": location.relativePath])
-    }
-    
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard error != nil else {
-            try! offlineAsset?.update(["status": "Finished"])
-            return
-        }
-    }
-    
-    func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didLoad timeRange: CMTimeRange, totalTimeRangesLoaded loadedTimeRanges: [NSValue], timeRangeExpectedToLoad: CMTimeRange) {
-        try! offlineAsset?.update(["status": "InProgress"])
-        var percentageComplete = 0.0
-        
-        for value in loadedTimeRanges {
-            let loadedTimeRange = value.timeRangeValue
-            percentageComplete += loadedTimeRange.duration.seconds / timeRangeExpectedToLoad.duration.seconds
-        }
-        
-        progressView.setProgress(Float(percentageComplete), animated: true)
-        
-        let downloadCompletedString = String(format: "%.1f", percentageComplete * 100)
-        
-        print("\(downloadCompletedString)% downloaded")
-        progressLabel.text = "\(downloadCompletedString)%"
     }
 }

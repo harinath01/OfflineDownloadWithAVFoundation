@@ -22,6 +22,8 @@
 		03B4314F2AAB25AC008B3369 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 03B4314E2AAB25AC008B3369 /* Alamofire */; };
 		03B431512AAC7104008B3369 /* BaseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431502AAC7104008B3369 /* BaseModel.swift */; };
 		03B431532AAC8C01008B3369 /* OfflineKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431522AAC8C01008B3369 /* OfflineKey.swift */; };
+		03B431552AAEE39F008B3369 /* AssetPersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431542AAEE39F008B3369 /* AssetPersistenceManager.swift */; };
+		03B431572AAEE538008B3369 /* RealmObjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B431562AAEE538008B3369 /* RealmObjectManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +41,8 @@
 		03B4314B2AAB2504008B3369 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		03B431502AAC7104008B3369 /* BaseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseModel.swift; sourceTree = "<group>"; };
 		03B431522AAC8C01008B3369 /* OfflineKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineKey.swift; sourceTree = "<group>"; };
+		03B431542AAEE39F008B3369 /* AssetPersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetPersistenceManager.swift; sourceTree = "<group>"; };
+		03B431562AAEE538008B3369 /* RealmObjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +107,8 @@
 			children = (
 				03B431452AAB2487008B3369 /* ContentKeyManager.swift */,
 				03B431472AAB24AF008B3369 /* ContentKeyDelegate.swift */,
+				03B431542AAEE39F008B3369 /* AssetPersistenceManager.swift */,
+				03B431562AAEE538008B3369 /* RealmObjectManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -200,9 +206,11 @@
 				031F59B12AA0958D009AFE92 /* ViewController.swift in Sources */,
 				031F59AD2AA0958D009AFE92 /* AppDelegate.swift in Sources */,
 				03A7A6622AA612FA005F3BDE /* OflineAsset.swift in Sources */,
+				03B431572AAEE538008B3369 /* RealmObjectManager.swift in Sources */,
 				03B431462AAB2488008B3369 /* ContentKeyManager.swift in Sources */,
 				031F59AF2AA0958D009AFE92 /* SceneDelegate.swift in Sources */,
 				03B431512AAC7104008B3369 /* BaseModel.swift in Sources */,
+				03B431552AAEE39F008B3369 /* AssetPersistenceManager.swift in Sources */,
 				03B4314C2AAB2504008B3369 /* API.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
