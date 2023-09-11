@@ -10,8 +10,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var progressLabel: UILabel!
     
     var playBackURL = URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/8eaHZjXt6km/video.m3u8")!
-    var player: AVPlayer?
-    var playerViewController: AVPlayerViewController?
+    var playerViewController = AVPlayerViewController()
     private var statusChangeNotificationToken: NotificationToken?
     private var progressChangeNotificationToken: NotificationToken?
     private var offlineAsset: OfflineAsset? {
@@ -26,13 +25,10 @@ class ViewController: UIViewController {
         let asset = AVURLAsset(url: self.playBackURL)
         setupDRM(asset)
         let playerItem = AVPlayerItem(asset: asset)
-        let player = AVPlayer(playerItem: playerItem)
-        playerViewController = AVPlayerViewController()
-        playerViewController?.player = player
-        
-        addChild(playerViewController!)
-        playerContainer.addSubview(playerViewController!.view)
-        playerViewController!.view.frame = playerContainer.bounds
+        playerViewController.player = AVPlayer(playerItem: playerItem)
+        addChild(playerViewController)
+        playerContainer.addSubview(playerViewController.view)
+        playerViewController.view.frame = playerContainer.bounds
         offlineAsset = AssetPersistenceManager.shared.getDownloadedAsset(srcURL: self.playBackURL.absoluteString)
     }
     
@@ -110,8 +106,8 @@ class ViewController: UIViewController {
         setupDRM(asset)
         if let cache = asset.assetCache, cache.isPlayableOffline {
             let playerItem = AVPlayerItem(asset: asset)
-            playerViewController?.player?.replaceCurrentItem(with: playerItem)
-            playerViewController?.player?.play()
+            playerViewController.player?.replaceCurrentItem(with: playerItem)
+            playerViewController.player?.play()
         }
     }
 }
