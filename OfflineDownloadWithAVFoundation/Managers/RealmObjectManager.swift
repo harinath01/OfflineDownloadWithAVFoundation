@@ -42,16 +42,6 @@ public class ObjectManager<T: Object> {
         return object
     }
     
-    func update(_ object: T, with attributes: [String: Any]) throws {
-        try self.raiseErrorIfInvalidAttributePassed(object, attributes)
-        
-        try realm.write {
-            for (key, value) in attributes {
-                object[key] = value
-            }
-        }
-    }
-    
     func filter(predicate: NSPredicate) -> Results<T> {
         return realm.objects(T.self).filter(predicate)
     }
