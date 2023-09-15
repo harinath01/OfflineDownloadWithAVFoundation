@@ -9,10 +9,10 @@ import Foundation
 import Alamofire
 
 class API {
-    static var DRM_LICENSE_API = "https://app.tpstreams.com/api/v1/6eafqn/assets/%@/drm_license/?access_token=%@&drm_type=fairplay"
+    static var DRM_LICENSE_API = "https://4bc2-183-82-25-87.ngrok-free.app/api/v1/4c7zdj/assets/%@/drm_license/?access_token=%@&drm_type=fairplay&download=%@"
     
-    static func getDRMLicense(_ assetID: String, _ accessToken: String, _ spcData: Data, _ contentID: String, _ completion:@escaping(Data?, Error?) -> Void) -> Void {
-        let url = URL(string: String(format: DRM_LICENSE_API, assetID, accessToken))!
+    static func getDRMLicense(_ assetID: String, _ accessToken: String, _ requestPersistentKey: Bool, _ spcData: Data, _ contentID: String, _ completion:@escaping(Data?, Error?) -> Void) -> Void {
+        let url = URL(string: String(format: DRM_LICENSE_API, assetID, accessToken, requestPersistentKey.description))!
         
         let parameters = [
             "spc": spcData.base64EncodedString(),

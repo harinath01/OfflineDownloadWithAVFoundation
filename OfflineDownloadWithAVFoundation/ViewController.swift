@@ -9,7 +9,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var progressLabel: UILabel!
     
-    var playBackURL = URL(string: "https://d384padtbeqfgy.cloudfront.net/transcoded/8eaHZjXt6km/video.m3u8")!
+    var playBackURL = URL(string: "https://d3cydmgt9q030i.cloudfront.net/transcoded/7Hs5bmMEuSE/video.m3u8")!
     var playerViewController = AVPlayerViewController()
     private var statusChangeNotificationToken: NotificationToken?
     private var progressChangeNotificationToken: NotificationToken?
@@ -34,7 +34,7 @@ class ViewController: UIViewController {
     
     private func setupDRM(_ asset: AVURLAsset){
         ContentKeyManager.shared.contentKeySession.addContentKeyRecipient(asset)
-        ContentKeyManager.shared.contentKeyDelegate.setAssetDetails("8eaHZjXt6km", "16b608ba-9979-45a0-94fb-b27c1a86b3c1")
+        ContentKeyManager.shared.contentKeyDelegate.setAssetDetails("7Hs5bmMEuSE", "1153bdf8-cd99-4924-b4a2-54deeec214d8")
     }
     
     private func addObserversOnOfflineAsset(){

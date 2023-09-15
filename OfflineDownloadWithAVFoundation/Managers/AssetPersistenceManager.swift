@@ -8,6 +8,11 @@ public final class AssetPersistenceManager: NSObject {
     private var assetDownloadURLSession: AVAssetDownloadURLSession!
     private var activeDownloadsMap = [AVAssetDownloadTask: OfflineAsset]()
     private let realm = try! Realm()
+    var contentKeySession: AVContentKeySession!
+    var contentKeyDelegate: ContentKeyDelegate!
+    let contentKeyDelegateQueue = DispatchQueue(label: "com.tpstreams.iOSPlayerSDK.ContentKeyDelegateQueue")
+    
+    
     
     private override init() {
         super.init()
@@ -17,6 +22,9 @@ public final class AssetPersistenceManager: NSObject {
             assetDownloadDelegate: self,
             delegateQueue: OperationQueue.main
         )
+        contentKeySession = AVContentKeySession(keySystem: .fairPlayStreaming)
+        contentKeyDelegate = ContentKeyDelegate()
+        contentKeySession.setDelegate(contentKeyDelegate, queue: contentKeyDelegateQueue)
     }
     
     public func getDownloadedAsset(srcURL: String) -> OfflineAsset? {
@@ -25,10 +33,10 @@ public final class AssetPersistenceManager: NSObject {
     }
     
     public func startDownloading(from srcURL: URL) -> OfflineAsset? {
-        let asset = createAVURLAsset(from: srcURL)
+        let asset = AVURLAsset(url: srcURL)
         
         guard let task = assetDownloadURLSession.makeAssetDownloadTask(
-            asset: asset,
+            asset: asset!,
             assetTitle: "video",
             assetArtworkData: nil,
             options: [AVAssetDownloadTaskMinimumRequiredMediaBitrateKey: 265_000]
@@ -36,9 +44,10 @@ public final class AssetPersistenceManager: NSObject {
             return nil
         }
         
-        let offlineAsset = try! OfflineAsset.manager.create(["srcURL": srcURL.absoluteString])
+        let offlineAsset = try! OfflineAsset.manager.create(["srcURL": srcURL.absoluteString, "contentID": "f6018f9642234d83829378c8f682050a"])
         activeDownloadsMap[task] = offlineAsset
         task.resume()
+        requestPersistentKey(offlineAsset)
         return offlineAsset
     }
     
@@ -79,11 +88,21 @@ public final class AssetPersistenceManager: NSObject {
         return realm.objects(OfflineAsset.self)
     }
     
-    private func createAVURLAsset(from srcURL: URL) -> AVURLAsset {
-        let asset = AVURLAsset(url: srcURL)
-        ContentKeyManager.shared.contentKeySession.addContentKeyRecipient(asset)
-        ContentKeyManager.shared.contentKeyDelegate.setAssetDetails("8eaHZjXt6km", "16b608ba-9979-45a0-94fb-b27c1a86b3c1")
-        return asset
+    private func requestPersistentKey(_ offlineasset: OfflineAsset) {
+        if let key = offlineasset.key {
+            try! key.update(["status": "Requested"])
+        } else {
+            let keyData: [String: Any] = ["status": "Requested"]
+            let newKey = try! OfflineKey.manager.create(keyData)
+            try! offlineasset.update(["key": newKey])
+        }
+        
+        contentKeyDelegate.setAssetDetails("7Hs5bmMEuSE", "1153bdf8-cd99-4924-b4a2-54deeec214d8")
+        contentKeySession.processContentKeyRequest(
+            withIdentifier: "skd://\(offlineasset.contentID)",
+            initializationData: nil,
+            options: nil
+        )
     }
 }
 
